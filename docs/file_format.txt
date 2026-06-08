@@ -1,0 +1,58 @@
+ZAR FILE FORMAT
+===============
+
+Block size: 8192 bytes.
+Header size: 256 bytes.
+Index entry size: 8 bytes.
+Index entries per index block: 1024.
+
+Layout
+------
+- The file begins with one or more index blocks.
+- Each index block contains 1024 uint64 offsets.
+- Each non-zero entry points to the first block of a stored record.
+- A stored record starts with a 256-byte header in the first block.
+- Continuation blocks have no header and store raw payload bytes only.
+
+Payload
+-------
+Payload stored for each record is:
+    title bytes + binary data bytes
+
+Header fields
+-------------
+uint64_t m_nextBlock
+uint64_t m_prevBlock
+uint64_t m_blockCount
+uint64_t m_timestamp
+uint64_t m_id
+uint64_t m_flags
+uint64_t m_counters[14]
+uint8_t  m_checksum[64]
+uint8_t  m_additional[16]
+uint64_t m_dataLength
+uint32_t m_titleLength
+uint32_t m_extra
+uint8_t  m_reserved[4]
+
+Checksum
+--------
+Checksum is a simple xor-based rolling checksum across 64-bit chunks of
+(title + data) using eight constant 64-bit seeds. The resulting 8 x 64-bit
+state is stored as 64 bytes.
+
+Selection APIs
+--------------
+Each Select* method returns JSON. The buffer-based methods stream the JSON in
+chunks, similar to repeated read() calls. Repeated calls with the same query
+continue where the previous call stopped until 0 bytes are returned.
+
+JSON file APIs
+--------------
+The *ToJsonFile methods write the same JSON document to the specified path, or
+an automatically generated temporary path in /tmp or %TEMP%/C:\Temp.
+
+Extraction
+----------
+ExtractOne and ExtractAll write the binary payload only, using the title as the
+relative path / file name under the specified extraction directory.

@@ -1,0 +1,45 @@
+Implementation notes
+====================
+
+This package is a complete C++11 implementation of the ZAR block archive
+format requested in the provided specification.
+
+Key decisions
+-------------
+1. Packed 256-byte header with explicit getter/setter wrapper.
+2. 8192-byte fixed blocks.
+3. Index area at the beginning of the file, storing uint64 offsets.
+4. Record payload is stored as title bytes followed by data bytes.
+5. JSON returned by Select* methods includes:
+   - header metadata
+   - title
+   - binary payload in base64
+   - title+data in base64
+6. Buffer-based Select* methods behave like repeated read() calls over the
+   generated JSON payload.
+7. Thread safety is provided with a store-level mutex.
+8. Large file support relies on 64-bit offsets and `_FILE_OFFSET_BITS=64`.
+9. Temporary JSON file output uses /tmp on POSIX and %TEMP% / C:\\Temp on Windows.
+10. Extraction sanitizes relative paths to avoid path traversal.
+
+Files
+-----
+- include/: public headers
+- src/: implementation
+- examples/: write and read examples
+- docs/: file format, design, and notes
+- test/: simple smoke test source
+
+
+Endianness update:
+- Added host byte-order detection.
+- Added byte-swap/conversion helpers for 16/32/64-bit numeric fields.
+- Header serialization/deserialization now converts numeric members between host and configured file byte order.
+- Index blocks are also serialized in the configured file byte order.
+- Default archive byte order remains little-endian.
+
+
+Endian conversion CLI
+---------------------
+A standalone command line tool is provided at tools/zar_endian_convert.cpp and built as bin/zar_endian_convert.
+It accepts --input, --output, --from, and --to parameters and rewrites the archive in the target byte order.
