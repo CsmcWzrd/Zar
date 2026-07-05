@@ -8,6 +8,10 @@ Production-oriented C++11 implementation of the ZAR block archive format.
 make
 ```
 
+# Information    
+Designed by Anoop Kumar Narayanan     
+Coded by ChatGPT 5.x        
+
 ## Run examples
 
 ```bash
